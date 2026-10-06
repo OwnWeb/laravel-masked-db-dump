@@ -8,6 +8,7 @@ use BeyondCode\LaravelMaskedDumper\TableDefinitions\TableDefinition;
 use Faker\Generator;
 use Illuminate\Support\Facades\DB;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Snapshots\MatchesSnapshots;
 
 class DumperTest extends TestCase
@@ -31,6 +32,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_can_dump_all_tables_without_modifications()
     {
         $this->loadLaravelMigrations();
@@ -56,6 +58,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_can_mask_user_names()
     {
         $this->loadLaravelMigrations();
@@ -85,6 +88,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_can_replace_columns_with_static_values()
     {
         $this->loadLaravelMigrations();
@@ -114,6 +118,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_can_replace_columns_with_faker_values()
     {
         $this->loadLaravelMigrations();
@@ -144,6 +149,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_can_dump_certain_tables_as_schema_only()
     {
         $this->loadLaravelMigrations();
@@ -170,6 +176,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_does_remove_excluded_tables_from_allTables()
     {
         $this->loadLaravelMigrations();
@@ -197,6 +204,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_does_remove_excluded_array_of_tables_from_allTables()
     {
         $this->loadLaravelMigrations();
@@ -223,6 +231,7 @@ class DumperTest extends TestCase
         $this->assertMatchesTextSnapshot(file_get_contents($outputFile));
     }
     /** @test */
+    #[Test]
     public function it_creates_chunked_insert_statements_for_a_table()
     {
         $this->loadLaravelMigrations();
@@ -264,6 +273,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_can_include_individual_unmodified_tables()
     {
         $this->loadLaravelMigrations();
@@ -290,6 +300,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_can_include_an_array_of_unmodified_tables()
     {
         $this->loadLaravelMigrations();
@@ -316,6 +327,7 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_still_includes_tables_with_repeated_use_of_include()
     {
         $this->loadLaravelMigrations();
