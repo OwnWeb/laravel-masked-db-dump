@@ -134,8 +134,6 @@ class LaravelMaskedDump
 
         if ($table->getChunkSize() > 0) {
 
-            $tableName = $table->getDoctrineTable()->getName();
-
             $this->fetchRows($table, $queryBuilder)
                 ->chunk($table->getChunkSize())
                 ->each(function ($chunk) use ($table, $tableName, $stream) {
