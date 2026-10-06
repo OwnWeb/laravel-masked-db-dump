@@ -361,6 +361,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_dumps_the_same_rows_when_querying_in_chunks()
     {
         $this->loadLaravelMigrations();
@@ -376,6 +378,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_combines_query_chunks_with_output_chunks()
     {
         $this->loadLaravelMigrations();
@@ -392,6 +396,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_queries_the_table_in_chunks()
     {
         $this->loadLaravelMigrations();
@@ -412,6 +418,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_refuses_to_query_in_chunks_with_an_order_set_with_query()
     {
         $this->loadLaravelMigrations();
@@ -429,6 +437,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_queries_in_chunks_of_a_custom_key_column()
     {
         Schema::create('devices', function (Blueprint $table) {
@@ -459,6 +469,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_does_not_need_more_memory_when_the_table_grows()
     {
         $usersPerBatch = 2000;
@@ -497,6 +509,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_writes_the_same_dump_gzipped()
     {
         $this->loadLaravelMigrations();
@@ -512,6 +526,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_fails_loudly_when_the_dump_cannot_be_written()
     {
         $this->loadLaravelMigrations();
@@ -529,6 +545,8 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+
+    #[Test]
     public function it_keeps_the_previous_dump_when_the_dump_fails()
     {
         $this->loadLaravelMigrations();
