@@ -217,8 +217,8 @@ return [
 ];
 ```
 
-When `query()` sets a limit, an offset or an order, the rows cannot be paginated by `$column`: the table is read
-with a cursor instead, which respects the query. On a buffered connection, `queryInChunksOf()` then brings no
+When `query()` sets a limit, an offset, an order, a selection of columns or a top level `orWhere()`, the rows cannot be
+paginated by `$column`: the table is read with a cursor instead, which respects the query. On a buffered connection, `queryInChunksOf()` then brings no
 memory gain for that table.
 
 The method `TableDefinition::outputInChunksOf(int $chunkSize)` groups up to `$chunkSize` rows into a single

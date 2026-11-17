@@ -484,6 +484,45 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    public function it_keeps_a_top_level_or_where_when_querying_in_chunks()
+    {
+        $this->loadLaravelMigrations();
+        $this->insertUsers(2);
+        $this->insertUsers(1, 'B', 3);
+
+        $orWhereQuery = function ($query) {
+            $query->where('name', 'Marcel1')->orWhere('name', 'Marcel3B');
+        };
+        $orWhereDump = $this->dumpUsersTable(function (TableDefinition $table) use ($orWhereQuery) {
+            $table->query($orWhereQuery);
+        });
+        $queryChunkedDump = $this->dumpUsersTable(function (TableDefinition $table) use ($orWhereQuery) {
+            $table->queryInChunksOf(1)->query($orWhereQuery);
+        });
+
+        $this->assertSame($orWhereDump, $queryChunkedDump);
+    }
+
+    /** @test */
+    public function it_keeps_the_selected_columns_when_querying_in_chunks()
+    {
+        $this->loadLaravelMigrations();
+        $this->insertUsers(3);
+
+        $selectQuery = function ($query) {
+            $query->select('name', 'email');
+        };
+        $selectedDump = $this->dumpUsersTable(function (TableDefinition $table) use ($selectQuery) {
+            $table->query($selectQuery);
+        });
+        $queryChunkedDump = $this->dumpUsersTable(function (TableDefinition $table) use ($selectQuery) {
+            $table->queryInChunksOf(1)->query($selectQuery);
+        });
+
+        $this->assertSame($selectedDump, $queryChunkedDump);
+    }
+
+    /** @test */
     public function it_queries_in_chunks_of_a_custom_key_column()
     {
         Schema::create('devices', function (Blueprint $table) {

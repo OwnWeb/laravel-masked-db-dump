@@ -116,15 +116,29 @@ class LaravelMaskedDump
     }
 
     /**
-     * lazyById() orders by the key column and sets its own limit per chunk, which would
-     * override a limit, an offset or an order set with query() (before Laravel 13 for limit and offset).
+     * lazyById() orders by the key column, sets its own limit per chunk and appends a condition on the key:
+     * a limit, an offset, an order, a selection of columns or a top level orWhere() set with query() would be
+     * overridden, would break the pagination, or would make it repeat rows (before Laravel 13 for limit and offset).
      */
     protected function canPaginateByKey(TableDefinition $table, Builder $queryBuilder): bool
     {
         return $table->getQueryChunkSize() > 0
             && $queryBuilder->limit === null
             && $queryBuilder->offset === null
-            && empty($queryBuilder->orders);
+            && empty($queryBuilder->orders)
+            && $queryBuilder->columns === null
+            && ! $this->hasTopLevelOrWhere($queryBuilder);
+    }
+
+    protected function hasTopLevelOrWhere(Builder $queryBuilder): bool
+    {
+        foreach ($queryBuilder->wheres as $where) {
+            if (($where['boolean'] ?? 'and') === 'or') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
