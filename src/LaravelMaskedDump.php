@@ -101,30 +101,27 @@ class LaravelMaskedDump
     }
 
     /**
-     * @return \Illuminate\Support\Enumerable
+     * @return \Illuminate\Support\LazyCollection
      */
     protected function fetchRows(TableDefinition $table, Builder $queryBuilder)
     {
-        if ($table->getQueryChunkSize() <= 0) {
-            return $queryBuilder->get();
+        if ($this->canPaginateByKey($table, $queryBuilder)) {
+            return $queryBuilder->lazyById($table->getQueryChunkSize(), $table->getQueryChunkColumn());
         }
 
-        if ($this->hasOwnPaginationOrOrder($queryBuilder)) {
-            return $queryBuilder->cursor();
-        }
-
-        return $queryBuilder->lazyById($table->getQueryChunkSize(), $table->getQueryChunkColumn());
+        return $queryBuilder->cursor();
     }
 
     /**
      * lazyById() orders by the key column and sets its own limit per chunk, which would
      * override a limit, an offset or an order set with query() (before Laravel 13 for limit and offset).
      */
-    protected function hasOwnPaginationOrOrder(Builder $queryBuilder): bool
+    protected function canPaginateByKey(TableDefinition $table, Builder $queryBuilder): bool
     {
-        return $queryBuilder->limit !== null
-            || $queryBuilder->offset !== null
-            || ! empty($queryBuilder->orders);
+        return $table->getQueryChunkSize() > 0
+            && $queryBuilder->limit === null
+            && $queryBuilder->offset === null
+            && empty($queryBuilder->orders);
     }
 
     /**

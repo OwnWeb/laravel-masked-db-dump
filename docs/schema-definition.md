@@ -193,7 +193,13 @@ When dumping your data, the dump will now contain a safe, randomly generated ema
 
 The dump is written to the output file as it is generated, so its size does not affect memory usage.
 
-By default, each table is read with a single query, which loads all of its rows into memory. For large tables,
+By default, each table is read with a single query, through a cursor. Depending on the database driver, the
+whole result may still be held in memory: MySQL buffers it by default. Setting
+`'options' => [PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false]` on the MySQL connection keeps the memory usage flat,
+without any other configuration. Use a connection dedicated to the dump (`DumpSchema::define('connection-name')`):
+a query run on the same connection while a table is being read, such as one made by a column replacer, would fail.
+
+For large tables on a buffered connection,
 the method `TableDefinition::queryInChunksOf(int $queryChunkSize, string $column = 'id')` reads the table in chunks
 of `$queryChunkSize` rows instead. Rows are paginated by the value of `$column`, which must be unique and never null,
 such as the primary key (rows where it is null are skipped). Rows are read in `$column` order:
@@ -212,8 +218,8 @@ return [
 ```
 
 When `query()` sets a limit, an offset or an order, the rows cannot be paginated by `$column`: the table is read
-with a cursor instead, which respects the query. Depending on the database driver, a cursor may still load the
-whole result in memory (MySQL buffers it by default), so `queryInChunksOf()` then brings no memory gain.
+with a cursor instead, which respects the query. On a buffered connection, `queryInChunksOf()` then brings no
+memory gain for that table.
 
 The method `TableDefinition::outputInChunksOf(int $chunkSize)` groups up to `$chunkSize` rows into a single
 `INSERT` statement, which makes the dump smaller and faster to import. It does not change how the table is read,
