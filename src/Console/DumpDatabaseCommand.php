@@ -7,6 +7,8 @@ use BeyondCode\LaravelMaskedDumper\LaravelMaskedDump;
 
 class DumpDatabaseCommand extends Command
 {
+    protected const PERMISSION_BITS = 0777;
+
     protected $signature = 'db:masked-dump {output} {--definition=default} {--gzip}';
 
     protected $description = 'Create a new database dump';
@@ -33,10 +35,27 @@ class DumpDatabaseCommand extends Command
             throw $exception;
         }
 
-        fclose($stream);
-        rename($partialOutputPath, $outputPath);
+        $this->publish($stream, $partialOutputPath, $outputPath);
 
         $this->output->writeln('');
         $this->info('Wrote database dump to ' . $outputPath);
+    }
+
+    /**
+     * @param resource $stream
+     */
+    protected function publish($stream, string $partialOutputPath, string $outputPath)
+    {
+        if (! fclose($stream)) {
+            unlink($partialOutputPath);
+
+            throw new \RuntimeException('Could not finish writing the database dump to ' . $partialOutputPath . '. Is the disk full?');
+        }
+
+        if (file_exists($outputPath)) {
+            chmod($partialOutputPath, fileperms($outputPath) & self::PERMISSION_BITS);
+        }
+
+        rename($partialOutputPath, $outputPath);
     }
 }

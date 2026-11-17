@@ -523,6 +523,22 @@ class DumperTest extends TestCase
     }
 
     /** @test */
+    public function it_keeps_the_permissions_of_the_previous_dump()
+    {
+        $this->loadLaravelMigrations();
+        $this->insertUsers(1);
+
+        $outputFile = base_path('test.sql');
+        file_put_contents($outputFile, 'previous dump');
+        chmod($outputFile, 0600);
+
+        $this->dumpUsersTable(function (TableDefinition $table) {
+        });
+
+        $this->assertSame(0600, fileperms($outputFile) & 0777);
+    }
+
+    /** @test */
     public function it_queries_in_chunks_of_a_custom_key_column()
     {
         Schema::create('devices', function (Blueprint $table) {
