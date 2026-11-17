@@ -23,7 +23,7 @@ class DumpDatabaseCommand extends Command
 
         $outputPath = $this->option('gzip') ? $this->argument('output') . '.gz' : $this->argument('output');
         $partialOutputPath = $outputPath . '.part';
-        $stream = $this->option('gzip') ? gzopen($partialOutputPath, 'w9') : fopen($partialOutputPath, 'w');
+        $stream = $this->openPartialDump($partialOutputPath, $outputPath);
 
         try {
             $dumper = new LaravelMaskedDump($definition, $this->output);
@@ -52,10 +52,20 @@ class DumpDatabaseCommand extends Command
             throw new \RuntimeException('Could not finish writing the database dump to ' . $partialOutputPath . '. Is the disk full?');
         }
 
+        rename($partialOutputPath, $outputPath);
+    }
+
+    /**
+     * @return resource
+     */
+    protected function openPartialDump(string $partialOutputPath, string $outputPath)
+    {
+        $stream = $this->option('gzip') ? gzopen($partialOutputPath, 'w9') : fopen($partialOutputPath, 'w');
+
         if (file_exists($outputPath)) {
             chmod($partialOutputPath, fileperms($outputPath) & self::PERMISSION_BITS);
         }
 
-        rename($partialOutputPath, $outputPath);
+        return $stream;
     }
 }
