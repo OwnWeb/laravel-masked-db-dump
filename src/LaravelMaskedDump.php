@@ -68,20 +68,23 @@ class LaravelMaskedDump
 
     protected function transformResultForInsert($row, TableDefinition $table)
     {
-        return collect($row)->map(function ($value, $column) use ($table) {
+        $insertRow = [];
+
+        foreach ($row as $column => $value) {
             if ($columnDefinition = $table->findColumn($column)) {
                 $value = $columnDefinition->modifyValue($value);
             }
 
             if ($value === null) {
-                return 'NULL';
+                $insertRow[$column] = 'NULL';
+            } elseif ($value === '') {
+                $insertRow[$column] = '""';
+            } else {
+                $insertRow[$column] = $this->platform->quoteStringLiteral($value);
             }
-            if ($value === '') {
-                return '""';
-            }
+        }
 
-            return $this->platform->quoteStringLiteral($value);
-        })->toArray();
+        return $insertRow;
     }
 
     protected function getPlatform(DatabaseConnection $connection)
