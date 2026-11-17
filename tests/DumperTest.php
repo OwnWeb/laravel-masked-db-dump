@@ -400,20 +400,87 @@ class DumperTest extends TestCase
     }
 
     /** @test */
-    public function it_refuses_to_query_in_chunks_with_an_order_set_with_query()
+    public function it_keeps_the_limit_set_with_query_when_querying_in_chunks()
+    {
+        $this->loadLaravelMigrations();
+        $this->insertUsers(3);
+
+        foreach ([2, 0] as $limit) {
+            $limitedDump = $this->dumpUsersTable(function (TableDefinition $table) use ($limit) {
+                $table->query(function ($query) use ($limit) {
+                    $query->limit($limit);
+                });
+            });
+            $queryChunkedDump = $this->dumpUsersTable(function (TableDefinition $table) use ($limit) {
+                $table->queryInChunksOf(1)->query(function ($query) use ($limit) {
+                    $query->limit($limit);
+                });
+            });
+
+            $this->assertSame($limitedDump, $queryChunkedDump, "limit($limit)");
+        }
+    }
+
+    /** @test */
+    public function it_keeps_the_order_set_with_query_when_querying_in_chunks()
     {
         $this->loadLaravelMigrations();
         $this->insertUsers(5);
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('queryInChunksOf() cannot be combined with an order set in query() on table "users", as rows are read in "id" order.');
-
-        $this->dumpUsersTable(function (TableDefinition $table) {
-            $table->queryInChunksOf(2);
+        $orderedDump = $this->dumpUsersTable(function (TableDefinition $table) {
             $table->query(function ($query) {
-                $query->latest();
+                $query->orderByDesc('id');
             });
         });
+        $queryChunkedDump = $this->dumpUsersTable(function (TableDefinition $table) {
+            $table->queryInChunksOf(2)->query(function ($query) {
+                $query->orderByDesc('id');
+            });
+        });
+
+        $this->assertSame($orderedDump, $queryChunkedDump);
+    }
+
+    /** @test */
+    public function it_keeps_the_offset_set_with_query_when_querying_in_chunks()
+    {
+        $this->loadLaravelMigrations();
+        $this->insertUsers(5);
+
+        $offsetDump = $this->dumpUsersTable(function (TableDefinition $table) {
+            $table->query(function ($query) {
+                $query->offset(3)->limit(5);
+            });
+        });
+        $queryChunkedDump = $this->dumpUsersTable(function (TableDefinition $table) {
+            $table->queryInChunksOf(1)->query(function ($query) {
+                $query->offset(3)->limit(5);
+            });
+        });
+
+        $this->assertSame($offsetDump, $queryChunkedDump);
+    }
+
+    /** @test */
+    public function it_reads_the_table_with_a_single_query_when_a_limit_is_set_with_query()
+    {
+        $this->loadLaravelMigrations();
+        $this->insertUsers(5);
+
+        $usersSelects = [];
+        DB::listen(function ($query) use (&$usersSelects) {
+            if (str_contains($query->sql, 'from "users"')) {
+                $usersSelects[] = $query->sql;
+            }
+        });
+
+        $this->dumpUsersTable(function (TableDefinition $table) {
+            $table->queryInChunksOf(1)->query(function ($query) {
+                $query->limit(3);
+            });
+        });
+
+        $this->assertCount(1, $usersSelects);
     }
 
     /** @test */

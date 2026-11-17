@@ -109,15 +109,22 @@ class LaravelMaskedDump
             return $queryBuilder->get();
         }
 
-        if (! empty($queryBuilder->orders)) {
-            throw new \InvalidArgumentException(sprintf(
-                'queryInChunksOf() cannot be combined with an order set in query() on table "%s", as rows are read in "%s" order.',
-                $table->getDoctrineTable()->getName(),
-                $table->getQueryChunkColumn()
-            ));
+        if ($this->hasOwnPaginationOrOrder($queryBuilder)) {
+            return $queryBuilder->cursor();
         }
 
         return $queryBuilder->lazyById($table->getQueryChunkSize(), $table->getQueryChunkColumn());
+    }
+
+    /**
+     * lazyById() orders by the key column and sets its own limit per chunk, which would
+     * override a limit, an offset or an order set with query() (before Laravel 13 for limit and offset).
+     */
+    protected function hasOwnPaginationOrOrder(Builder $queryBuilder): bool
+    {
+        return $queryBuilder->limit !== null
+            || $queryBuilder->offset !== null
+            || ! empty($queryBuilder->orders);
     }
 
     /**

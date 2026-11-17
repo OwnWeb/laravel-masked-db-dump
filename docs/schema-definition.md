@@ -196,7 +196,7 @@ The dump is written to the output file as it is generated, so its size does not 
 By default, each table is read with a single query, which loads all of its rows into memory. For large tables,
 the method `TableDefinition::queryInChunksOf(int $queryChunkSize, string $column = 'id')` reads the table in chunks
 of `$queryChunkSize` rows instead. Rows are paginated by the value of `$column`, which must be unique and never null,
-such as the primary key (rows where it is null are skipped). Rows are read in `$column` order, so `queryInChunksOf()` cannot be combined with an order set with `query()`:
+such as the primary key (rows where it is null are skipped). Rows are read in `$column` order:
 
 ```php
 return [
@@ -210,6 +210,10 @@ return [
         }),
 ];
 ```
+
+When `query()` sets a limit, an offset or an order, the rows cannot be paginated by `$column`: the table is read
+with a cursor instead, which respects the query. Depending on the database driver, a cursor may still load the
+whole result in memory (MySQL buffers it by default), so `queryInChunksOf()` then brings no memory gain.
 
 The method `TableDefinition::outputInChunksOf(int $chunkSize)` groups up to `$chunkSize` rows into a single
 `INSERT` statement, which makes the dump smaller and faster to import. It does not change how the table is read,

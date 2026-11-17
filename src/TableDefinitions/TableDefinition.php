@@ -42,7 +42,8 @@ class TableDefinition
     /**
      * Read the table in chunks of $queryChunkSize rows instead of loading it all at once.
      * $column must be unique and never null, such as the primary key: rows are paginated by its value,
-     * and rows where it is null are skipped. Rows are read in $column order: an order set with query() throws an exception.
+     * and rows where it is null are skipped. Rows are read in $column order.
+     * A limit, an offset or an order set with query() cannot be paginated: the table is then read with a cursor.
      */
     public function queryInChunksOf(int $queryChunkSize, string $column = 'id')
     {
