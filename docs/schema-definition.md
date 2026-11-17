@@ -197,7 +197,7 @@ By default, each table is read with a single query, through a cursor. Depending 
 whole result may still be held in memory: MySQL buffers it by default. Setting
 `'options' => [PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false]` on the MySQL connection keeps the memory usage flat,
 without any other configuration. Use a connection dedicated to the dump (`DumpSchema::define('connection-name')`):
-a query run on the same connection while a table is being read, such as one made by a column replacer, would fail.
+with this option, a query run on the same connection while a table is being read, such as one made by a column replacer, would fail.
 
 For large tables on a buffered connection,
 the method `TableDefinition::queryInChunksOf(int $queryChunkSize, string $column = 'id')` reads the table in chunks
